@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>שעון שאיבה מעוצב</title>
+    <!-- ייבוא גופן רוביק -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@300;400;500;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary: #f06292;       /* ורוד עמוק */
+            --primary-light: #f8bbd0; /* ורוד בהיר */
+            --bg-color: #fff5f8;      /* רקע כללי */
+            --card-bg: #ffffff;
+            --text-main: #4a4a4a;
+            --text-light: #757575;
+            --accent-teal: #26a69a;   /* צבע לדו-צדדי */
+            --accent-purple: #ab47bc; /* צבע לצד שני */
+            --shadow: 0 8px 30px rgba(240, 98, 146, 0.15);
+        }
+
+        body {
+            font-family: 'Rubik', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .container {
+            background: var(--card-bg);
+            width: 100%;
+            max-width: 480px;
+            padding: 2rem;
+            border-radius: 24px;
+            box-shadow: var(--shadow);
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        h1 {
+            color: var(--primary);
+            margin: 0 0 5px 0;
+            font-weight: 700;
+            font-size: 1.8rem;
+        }
+        
+        .subtitle {
+            font-size: 0.9rem;
+            color: var(--text-light);
+            margin-bottom: 25px;
+        }
+
+        /* --- בחירת מצב שאיבה (כרטיסיות) --- */
+        .mode-selector {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .mode-option input {
+            display: none;
+        }
+
+        .mode-option label {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 100px;
+            height: 80px;
+            background: #f5f5f5;
+            border: 2px solid transparent;
+            border-radius: 16px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: var(--text-light);
+        }
+
+        .mode-option label span {
+            font-size: 1.5rem;
+            margin-bottom: 5px;
+            display: block;
+        }
+
+        .mode-option input:checked + label {
+            background: #fff;
+            border-color: var(--primary);
+            color: var(--primary);
+            box-shadow: 0 4px 15px rgba(240, 98, 146, 0.2);
+            transform: translateY(-2px);
+        }
+
+        /* --- קלט מספר סבבים --- */
+        .section-title {
+            font-size: 1rem;
+            font-weight: 500;
+            margin-bottom: 15px;
+            color: var(--text-main);
+        }
+
+        .rounds-control {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 25px;
+            background: #fafafa;
+            padding: 10px;
+            border-radius: 50px;
+            width: fit-content;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        /* --- כפתורי פלוס/מינוס --- */
+        .stepper-btn {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border: none;
+            background: white;
+            color: var(--primary);
+            font-size: 1.2rem;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            transition: transform 0.1s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .stepper-btn:active { transform: scale(0.9); }
+        .stepper-btn.mini { width: 28px; height: 28px; font-size: 1rem; background: #eee; color: #555; }
+
+        .rounds-display {
+            font-size: 1.2rem;
+            font-weight: bold;
+            width: 20px;
+        }
+
+        /* --- רשת תיבות זמן --- */
+        .inputs-grid {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 12px;
+            margin-bottom: 30px;
+        }
+
+        .time-card {
+            background: #fff;
+            border: 1px solid #eee;
+            border-radius: 12px;
+            padding: 10px;
+            width: 90px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+        }
+
+        .time-card span {
+            font-size: 0.75rem;
+            color: var(--text-light);
+            margin-bottom: 8px;
+        }
+
+        .time-stepper {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .time-value {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--primary);
+            width: 25px;
+            text-align: center;
+        }
+
+        /* --- התרעה --- */
+        .alert-setting {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            font-size: 0.9rem;
+            color: var(--text-light);
+            margin-bottom: 25px;
+            background: #f9f9f9;
+            padding: 10px;
+            border-radius: 12px;
+        }
+        
+        .alert-setting input {
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            padding: 5px;
+            width: 50px;
+            text-align: center;
+            font-family: inherit;
+        }
+
+        /* --- טיימר --- */
+        .timer-circle {
+            width: 260px;
+            height: 260px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #fff0f6 0%, #fff 100%);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            margin: 0 auto 30px auto;
+            border: 8px solid #fce4ec;
+            box-shadow: inset 0 0 20px rgba(240,98,146,0.1);
+            position: relative;
+            transition: border-color 0.5s;
+        }
+
+        .timer-time {
+            font-size: 4.5rem;
+            font-weight: 300;
+            color: var(--text-main);
+            line-height: 1;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .side-badge {
+            font-size: 1.1rem;
+            font-weight: 700;
+            padding: 6px 16px;
+            border-radius: 20px;
+            margin-bottom: 10px;
+            color: white;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+
+        /* צבעים דינמיים לטיימר */
+        .mode-side1 .timer-circle { border-color: var(--primary-light); }
+        .mode-side1 .side-badge { background-color: var(--primary); }
+
+        .mode-side2 .timer-circle { border-color: #e1bee7; }
+        .mode-side2 .side-badge { background-color: var(--accent-purple); }
+
+        .mode-double .timer-circle { border-color: #b2dfdb; }
+        .mode-double .side-badge { background-color: var(--accent-teal); }
+
+        /* --- כפתורים ראשיים --- */
+        .btn-main {
+            background: linear-gradient(45deg, var(--primary), #ec407a);
+            color: white;
+            border: none;
+            padding: 16px 40px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            border-radius: 50px;
+            cursor: pointer;
+            width: 100%;
+            box-shadow: 0 10px 20px rgba(233, 30, 99, 0.3);
+            transition: transform 0.2s, box-shadow 0.2s;
+            font-family: 'Rubik', sans-serif;
+        }
+
+        .btn-main:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 25px rgba(233, 30, 99, 0.4);
+        }
+        
+        .btn-main:active { transform: scale(0.98); }
+
+        .btn-pause {
+            background: linear-gradient(45deg, #ff9800, #f57c00);
+            box-shadow: 0 10px 20px rgba(255, 152, 0, 0.3);
+        }
+
+        .btn-reset {
+            background: transparent;
+            color: var(--text-light);
+            border: none;
+            margin-top: 15px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            text-decoration: underline;
+        }
+
+        .status-text {
+            color: var(--primary);
+            font-weight: 500;
+            margin-bottom: 5px;
+            min-height: 24px;
+        }
+        
+        .sub-status {
+            font-size: 0.9rem;
+            color: #999;
+        }
+
+        .hidden { display: none !important; }
+
+        /* אנימציה כשהזמן נגמר */
+        .pulse-anim { animation: pulse 1s infinite; }
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+            100% { transform: scale(1); }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div id="setup-panel">
+        <h1>שעון שאיבה</h1>
+        <div class="subtitle">הגדירי את תוכנית השאיבה שלך</div>
+
+        <!-- בחירת סוג שאיבה -->
+        <div class="mode-selector">
+            <div class="mode-option">
+                <input type="radio" id="single" name="pumpMode" value="single" checked onchange="updateUIForMode()">
+                <label for="single">
+                    <span>🤱</span>
+                    חד צדדי
+                </label>
+            </div>
+            <div class="mode-option">
+                <input type="radio" id="double" name="pumpMode" value="double" onchange="updateUIForMode()">
+                <label for="double">
+                    <span>⚖️</span>
+                    דו צדדי
+                </label>
+            </div>
+        </div>
+        <div id="mode-helper" style="font-size: 0.8rem; color: #888; margin-bottom: 20px;">
+            מבצע פעמיים כל זמן (ימין/שמאל לסירוגין)
+        </div>
+
+        <!-- בחירת מספר סבבים -->
+        <div class="section-title">כמה סבבים של זמנים שונים?</div>
+        <div class="rounds-control">
+            <button class="stepper-btn" onclick="changeRounds(-1)">-</button>
+            <span id="roundsCountDisplay" class="rounds-display">3</span>
+            <button class="stepper-btn" onclick="changeRounds(1)">+</button>
+        </div>
+
+        <!-- בחירת דקות לכל סבב -->
+        <div class="section-title">דקות לכל סבב:</div>
+        <div id="dynamicInputs" class="inputs-grid">
+            <!-- נוצר דינמית -->
+        </div>
+
+        <div class="alert-setting">
+            <span>🔊 צפצוף התרעה</span>
+            <input type="number" id="preAlertTime" value="30">
+            <span>שניות לפני הסוף</span>
+        </div>
+
+        <button class="btn-main" onclick="initTimer()">התחלי שאיבה</button>
+    </div>
+
+    <!-- מסך טיימר -->
+    <div id="timer-panel" class="hidden">
+        <div id="timer-container" class="mode-side1">
+            <div class="timer-circle">
+                <div id="side-badge" class="side-badge">צד ראשון</div>
+                <div id="display" class="timer-time">00:00</div>
+            </div>
+        </div>
+
+        <div id="msg-box" class="status-text"></div>
+        <div id="phase-info" class="sub-status"></div>
+
+        <div style="margin-top: 30px;">
+            <button id="action-btn" class="btn-main btn-pause" onclick="toggleTimer()">השהה</button>
+            <button class="btn-reset" onclick="resetTimer()">ביטול וחזרה להגדרות</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // --- משתנים ---
+    let rounds = 3;
+    let schedule = [];
+    let currentStepIndex = 0;
+    let remainingSeconds;
+    let preAlertSeconds;
+    let timerInterval;
+    let isRunning = false;
+    let audioCtx;
+
+    // --- אתחול UI ---
+    window.onload = function() {
+        renderTimeInputs();
+        updateUIForMode();
+    };
+
+    function updateUIForMode() {
+        const mode = document.querySelector('input[name="pumpMode"]:checked').value;
+        const helper = document.getElementById('mode-helper');
+        if (mode === 'single') {
+            helper.innerText = "כל זמן יבוצע פעמיים (פעם לימין ופעם לשמאל לסירוגין)";
+        } else {
+            helper.innerText = "כל זמן יבוצע פעם אחת (שני הצדדים בו זמנית)";
+        }
+    }
+
+    function changeRounds(delta) {
+        rounds += delta;
+        if (rounds < 1) rounds = 1;
+        if (rounds > 10) rounds = 10;
+        document.getElementById('roundsCountDisplay').innerText = rounds;
+        renderTimeInputs();
+    }
+
+    function renderTimeInputs() {
+        const container = document.getElementById('dynamicInputs');
+        
+        // שמירת ערכים קיימים אם יש
+        const existingValues = [];
+        document.querySelectorAll('.time-data').forEach(el => existingValues.push(el.innerText));
+
+        container.innerHTML = '';
+        const defaultValues = [7, 5, 3, 2, 2];
+
+        for (let i = 0; i < rounds; i++) {
+            // לוקח ערך קיים או ברירת מחדל
+            let val = (i < existingValues.length) ? existingValues[i] : (i < defaultValues.length ? defaultValues[i] : 2);
+            
+            const div = document.createElement('div');
+            div.className = 'time-card';
+            div.innerHTML = `
+                <span>סבב ${i + 1}</span>
+                <div class="time-stepper">
+                    <button class="stepper-btn mini" onclick="updateTime(this, -1)">-</button>
+                    <span class="time-value time-data">${val}</span>
+                    <button class="stepper-btn mini" onclick="updateTime(this, 1)">+</button>
+                </div>
+            `;
+            container.appendChild(div);
+        }
+    }
+
+    function updateTime(btn, delta) {
+        const display = btn.parentElement.querySelector('.time-value');
+        let val = parseInt(display.innerText) + delta;
+        if (val < 1) val = 1;
+        display.innerText = val;
+    }
+
+    // --- לוגיקה טיימר ואודיו ---
+    function initAudio() {
+        if (!audioCtx) { 
+            const AudioContext = window.AudioContext || window.webkitAudioContext;
+            audioCtx = new AudioContext(); 
+        }
+        if (audioCtx.state === 'suspended') { audioCtx.resume(); }
+    }
+
+    function playTone(freq, type, duration) {
+        initAudio();
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = type;
+        osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+        gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + duration);
+    }
+
+    function playPreAlert() {
+        playTone(600, 'sine', 0.15);
+        setTimeout(() => playTone(600, 'sine', 0.15), 250);
+    }
+
+    function playEndStep() {
+        playTone(400, 'triangle', 0.1);
+        setTimeout(() => playTone(600, 'triangle', 0.1), 150);
+        setTimeout(() => playTone(800, 'triangle', 0.3), 300);
+    }
+
+    function initTimer() {
+        const mode = document.querySelector('input[name="pumpMode"]:checked').value;
+        const timeValues = document.querySelectorAll('.time-data');
+        preAlertSeconds = parseInt(document.getElementById('preAlertTime').value);
+        
+        schedule = [];
+        
+        timeValues.forEach(el => {
+            const minutes = parseInt(el.innerText);
+            if (mode === 'single') {
+                schedule.push({ type: 'side1', name: "צד ראשון", minutes: minutes });
+                schedule.push({ type: 'side2', name: "צד שני", minutes: minutes });
+            } else {
+                schedule.push({ type: 'double', name: "דו-צדדי", minutes: minutes });
+            }
+        });
+
+        if (schedule.length === 0) return;
+
+        currentStepIndex = 0;
+        loadStep();
+        
+        document.getElementById('setup-panel').classList.add('hidden');
+        document.getElementById('timer-panel').classList.remove('hidden');
+        
+        startTimer();
+    }
+
+    function loadStep() {
+        const step = schedule[currentStepIndex];
+        remainingSeconds = step.minutes * 60;
+        
+        // עדכון טקסט
+        document.getElementById('side-badge').innerText = step.name;
+        
+        // עדכון צבעים (Class)
+        const container = document.getElementById('timer-container');
+        container.className = ''; // איפוס
+        if (step.type === 'side1') container.classList.add('mode-side1');
+        else if (step.type === 'side2') container.classList.add('mode-side2');
+        else container.classList.add('mode-double');
+
+        updateDisplay();
+        document.getElementById('phase-info').innerText = `שלב ${currentStepIndex + 1} מתוך ${schedule.length}`;
+        document.getElementById('msg-box').innerText = "";
+        
+        // איפוס אנימציות
+        document.querySelector('.timer-circle').classList.remove('pulse-anim');
+    }
+
+    function startTimer() {
+        initAudio();
+        isRunning = true;
+        const btn = document.getElementById('action-btn');
+        btn.innerText = "השהה";
+        btn.classList.add('btn-pause');
+        
+        clearInterval(timerInterval);
+        timerInterval = setInterval(() => {
+            if (remainingSeconds > 0) {
+                remainingSeconds--;
+                updateDisplay();
+                if (remainingSeconds === preAlertSeconds) {
+                    playPreAlert();
+                    document.getElementById('msg-box').innerText = "תיכף מסיימים...";
+                    document.querySelector('.timer-circle').classList.add('pulse-anim');
+                }
+            } else {
+                handleStepFinish();
+            }
+        }, 1000);
+    }
+
+    function toggleTimer() {
+        if (isRunning) {
+            isRunning = false;
+            clearInterval(timerInterval);
+            const btn = document.getElementById('action-btn');
+            btn.innerText = "המשך";
+            btn.classList.remove('btn-pause'); // הופך לורוד
+            document.querySelector('.timer-circle').classList.remove('pulse-anim');
+        } else {
+            startTimer();
+        }
+    }
+
+    function handleStepFinish() {
+        isRunning = false;
+        clearInterval(timerInterval);
+        playEndStep();
+        document.querySelector('.timer-circle').classList.remove('pulse-anim');
+
+        if (currentStepIndex < schedule.length - 1) {
+            const nextStep = schedule[currentStepIndex + 1];
+            document.getElementById('msg-box').innerText = "הסבב הסתיים!";
+            
+            const btn = document.getElementById('action-btn');
+            btn.innerText = `התחלי ${nextStep.name} (${nextStep.minutes} דק')`;
+            btn.classList.remove('btn-pause');
+            
+            currentStepIndex++;
+            loadStep(); // טוען את המספרים אך לא מריץ
+        } else {
+            finishAll();
+        }
+    }
+
+    function finishAll() {
+        document.getElementById('msg-box').innerText = "כל הכבוד! סיימת 💖";
+        document.getElementById('side-badge').innerText = "סיום";
+        document.getElementById('side-badge').style.background = "#4caf50";
+        document.getElementById('timer-container').style.borderColor = "#4caf50";
+        document.getElementById('action-btn').classList.add('hidden');
+        document.getElementById('display').innerText = "00:00";
+    }
+
+    function updateDisplay() {
+        const m = Math.floor(remainingSeconds / 60);
+        const s = remainingSeconds % 60;
+        document.getElementById('display').innerText = 
+            `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+    }
+
+    function resetTimer() {
+        isRunning = false;
+        clearInterval(timerInterval);
+        document.getElementById('timer-panel').classList.add('hidden');
+        document.getElementById('setup-panel').classList.remove('hidden');
+        document.getElementById('action-btn').classList.remove('hidden');
+        // איפוס סגנונות
+        document.getElementById('side-badge').style.background = "";
+    }
+</script>
+
+</body>
+</html>
